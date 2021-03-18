@@ -1,15 +1,16 @@
+package MathTools;
+
 import java.util.InputMismatchException;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Scanner;
 import java.math.BigInteger;
 
-public class mathTools {
+public class MathTools {
 
     /**Finds the greatest common divisor of 2 integers
      * @param n any integer number
      * @param d any integer number
-     * @return  gcd greatest common divisor of the 2 given integers
+     * @return  gcd greatest common divisor of the 2 given integers of type int
      * */
     public static int gcd(int n, int d){
 
@@ -20,8 +21,7 @@ public class mathTools {
         r = b - (q * a);
 
         while(!(r == 0)){
-            int tempB = a;
-            b = tempB;
+            b = a;
             int tempR = r;
             q = b / tempR;
             a = tempR;
@@ -31,51 +31,12 @@ public class mathTools {
         return gcd;
     }
 
-    /**An efficient way to compute d^(n-1) (mod n)
-     *
-     * @param d   a new random int d  0 < d < p
-     * @param p   n-1
-     * @param n   an integer as mod
-     * @return
+    /**Returns true if 'n' is a Carmichael number.
+     * 'n' must be a composite number that satisfies the relation (b^n-1 ≡ 1 mod n for all 'b' co-prime of 'n'
+     * @param n an integer
+     * @return returns true if 'n' is Carmichael number
      */
-    public static int modExp(int d, int p, int n){
-        int b;
-        switch(p){
-            case 0:
-                return 1;
-            case 1:
-                return d%n;
-            default:
-                b = modExp(d,p/2,n);
-                b = (b*b) % n; // thats where the error probably is
-                if(p%2 == 1) b = (b*d) % n;
-                return b;
-        }
-    }
-
-    /**An efficient way to compute d^(n-1) (mod n)
-     *
-     * @param d   a new random int d  0 < d < p
-     * @param p   n-1
-     * @param n   an integer as mod
-     * @return
-     */
-    public static BigInteger bigModExp(int d, int p, int n){
-        BigInteger b;
-        switch(p){
-            case 0:
-                return new BigInteger(String.valueOf(1));
-            case 1:
-                return new BigInteger(String.valueOf(d%n));
-            default:
-                b = bigModExp(d,p/2,n);
-                b = b.multiply(b).mod(new BigInteger(String.valueOf(n))); // thats where the error probably is
-                if(p%2 == 1) b = b.multiply(b).mod(new BigInteger(String.valueOf(n)));
-                return b;
-        }
-    }
-
-    public static boolean isCharmichael(int n){
+    public static boolean isCarmichael(int n){
         int a, s;
         boolean factorFound = false;
         if(n%2 == 0) return false;
@@ -83,6 +44,7 @@ public class mathTools {
         s = (int) Math.sqrt(n);
         a = 2;
         while(a < n){
+            //System.out.println(n);
             if(a > s && !factorFound){
                 return false;
             }
@@ -90,7 +52,9 @@ public class mathTools {
                 factorFound = true;
             }
             else{
-                if(modExp(a,n-1,n) != 1){
+                BigInteger bigA = new BigInteger(String.valueOf(a));
+                if(!bigA.modPow(new BigInteger(String.valueOf(n-1)),new BigInteger(String.valueOf(n)))
+                        .equals(new BigInteger(String.valueOf(1)))){
                     return false;
                 }
             }
@@ -99,25 +63,82 @@ public class mathTools {
         return true;
     }
 
-    public static List<Integer> charmichaelRangeList(int n){
-        List<Integer> charmichaelRangeList = new LinkedList<Integer>();
+    /**Returns a LinkedList of all Carmichael numbers up to 'n'
+     *
+     * @param n a number of type int
+     * @return a LinkedList of Integer Objects
+     */
+    public static LinkedList<Integer> carmichaelNumList(int n){
+        LinkedList<Integer> list = new LinkedList<>();
         for(int i = 2; i < n; i++){
-            if(isCharmichael(i))charmichaelRangeList.add(i);
+            if(isCarmichael(i))list.add(i);
         }
-        System.out.println(charmichaelRangeList.toString());
-        return charmichaelRangeList;
+        return list;
     }
 
-    public static void fermatsPrimalityTest() {
+
+    /**An efficient Fermat's primality test for integer n.
+     * It tests for primality 100 times each time using a new 'd' where 0 &lt;= d &lt;= n
+     * @param n an number of type int
+     * @return  a boolean value as to whether n is a prime number or not
+     */
+    public static boolean isPrime(int n){
+        int  d, gcd;
+        BigInteger dPowN, bigD, bigN, dPowModN;
+        int testCount = 100;
+
+        //make n of BigInteger Type
+        bigN = new BigInteger(String.valueOf(n));
+
+        //Fermat's primality testing loop
+        while(testCount > 0) {
+            //select a new random int d  0 < d < p every time the loop runs
+            d = (int) (Math.random() * (n - 1)) + 1;
+            //make d also to BigInteger type for calculation compatibility
+            bigD = new BigInteger(String.valueOf(d));
+
+            //calculate gcd of d and n
+            gcd = gcd(d,n);
+
+            //1.Step consider Fermat's first condition, if gcd != 1 then n is definitely a composite number
+            if(gcd != 1) {
+                return false;
+            }
+
+            //if gcd = 1 then we consider the value of d^n−1 mod n.
+            else{
+                dPowN = bigD.pow(bigN.intValue()-1);
+                dPowModN = dPowN.mod(bigN);
+
+                //if the value of d^n−1 mod n is not 1 then again n is definitely a composite number
+                if(dPowModN.intValue() != 1){
+                    return false;
+                }
+                //else the loops ends when 100 tries have been completed and that means that n is probably a
+                //prime or Carmichael number
+            }
+            testCount--;
+        }
+
+        if(testCount == 0) {
+            // check in n is a carmichael number and return false if it is
+            return !isCarmichael(bigN.intValue());
+        }
+        //else its a prime
+        return true;
+    }
+
+    /**Performs Fermat's primality test for an integer acquired through user input
+     * This static method runs independently as a small program.
+     */
+    public static void fermatPrimalityTest() {
         Scanner sc = new Scanner(System.in);
         boolean nFormat = false;
         int n, d, gcd;
         BigInteger dPowN, bigD, bigN, dPowModN;
-        int prime = 0;
-        int composite = 0;
         int testCount = 100;
 
-        //get an int from user input
+        //get an int from user input and catch corresponding exceptions
         try {
             do {
                 System.out.println("Please enter an Integer: ");
@@ -143,18 +164,17 @@ public class mathTools {
         //make n of BigInteger Type
         bigN = new BigInteger(String.valueOf(n));
 
-        //Fermats primality testing loop
+        //Fermat's primality testing loop
         while(testCount > 0) {
             //select a new random int d  0 < d < p every time the loop runs
             d = (int) (Math.random() * (n - 1)) + 1;
             //make d also to BigInteger type
             bigD = new BigInteger(String.valueOf(d));
-            //System.out.println("The random number 'd'  0 < d < n is:  " + d);
 
             //calculate gcd of d and n
             gcd = gcd(d,n);
 
-            //1.Step consider Fermats first condition, if gcd != 1 then n is definitely a composite number
+            //1.Step consider Fermat's first condition, if gcd != 1 then n is definitely a composite number
             if(gcd != 1) {
                 System.out.println("The number '" + n +
                         "' is a composite number!");
@@ -162,54 +182,74 @@ public class mathTools {
             }
 
             //if gcd = 1 then consider we consider the value of d^n−1 mod n.
-            if(gcd == 1){
+            else{
                 dPowN = bigD.pow(n-1);
-                //System.out.println("d^n-1 = " + dPowN);
                 dPowModN = dPowN.mod(bigN);
-                //System.out.println("d^n-1 mod n = " + dPowModN);
 
                 //if the value of d^n−1 mod n is not 1 then again n is definitely a composite number
                 if(dPowModN.intValue() != 1){
-                //if(bigModExp(d, n-1, n).intValue() != 1){
                     System.out.println("The number '" + n +
                             "' is a composite number!");
                     break;
                 }
 
-                //else the loops ends when 100 tries have been completed and thta means that n is probably a
-                //prime or charmichael number
+                //else the loops ends when 100 tries have been completed and that means that n is probably a
+                //prime or Carmichael number
             }
             testCount--;
         }
 
         if(testCount == 0) {
-            List<Integer>charmichaelNumbers = new LinkedList<Integer>(charmichaelRangeList(n));
             boolean found = false;
-            //for(Integer i : charmichaelNumbers){
-            //    if(i == n){
-            //        found = true;
-            //        System.out.println("The number '" + n +
-            //                "' is a Charmichael number!");
-            //    }
-            //}
-            if(isCharmichael(n))found = true;
+            if(isCarmichael(n))found = true;
             if(!found)System.out.println("The number '" + n +
                     "' is a prime number!");
 
         }
     }
 
-    public static void main(String[] args){
-       fermatsPrimalityTest();
-        //charmichaelRangeList(100000);
-        int n;
-        //for(n = 2; n < 100000; n ++){
-        //    if(isCharmichael(n)) System.out.println(n);
-        //}
-        boolean b = isCharmichael(41041);
-        System.out.println(b);
+    /**Returns the results of Encrypted: (z^e mod M) from public key (e,M) and Decrypted: (z^d mod M) from private key(d,M).
+     * While testing RSA Encryption on paper I noticed that when the calculated values for e or d where a few digits long
+     * my calculator couldn't use them as exponents to calculate (z^e) for the encryption or (z^d) for the decryption of some character (z).
+     * So I wrote this method that can do that and so help me understand the final encryption and decryption step
+     * by applying the (z^e mod M) and (z^d mod M) of the RSA Encryption method.
+     *
+     * @param charInput  a number corresponding to the character to be encrypted/ decrypted
+     * @param e          the 'e' from (z^e mod M)
+     * @param d          the 'd' from (z^d mod M)
+     * @param M          the 'M' from (z^d mod M) or (z^d mod M)
+     */
+    public static void rsaKeysTest(BigInteger charInput, int e, int d,
+                                   BigInteger M){
 
+        BigInteger cipher = charInput.pow(e).mod(M);
+        BigInteger decipher = cipher.pow(d).mod(M);
+        System.out.println("Encrypted Input is: "+ cipher + " " +
+                "Decrypted is : " + decipher + " Input was : " + charInput);
+    }
 
+    /**Prints a linked list containing all prime factors of an Integer.
+     * An efficient way to get the prime factors of any integer up to 9223372036854775807
+     * @param n an integer of type long (for integers larger than 2147483647,
+     *          please put an 'L' at the end of any input integer &gt; 2147483647 i.e.(9223372036854775807L)
+     */
+    public static void getPrimeFactorsOf(long n){
+        boolean factorized = false;
+        long num = n;
+        int divisor = 2;
+        LinkedList<Integer>primeFactors = new LinkedList<>();
 
+        while(!factorized){
+            long remainder = num % divisor;
+            if(remainder == 0){
+                primeFactors.add(divisor);
+                num = num / divisor;
+                if(num == 1)factorized = true;
+            }
+            else{
+                divisor++;
+            }
+        }
+        System.out.println(primeFactors.toString());
     }
 }
