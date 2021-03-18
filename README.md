@@ -1,1 +1,1 @@
-A Class containing some static math methods that I programmed to help me deepen my understanding regarding some basic mathematical concepts from the first semester of my computer science studies. The class may be expanded in the future.
+A Class containing some static math methods that I programmed to help me deepen my understanding of some basic mathematical concepts from the first semester of my computer science studies. The class may be expanded in the future.
