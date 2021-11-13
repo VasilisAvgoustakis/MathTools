@@ -287,6 +287,7 @@ public class MathTools {
         return true;
     }
     
+  
     /**
      * Return true if the two matrices are of same size/type and thus matrix addition can be performed.
      * @param matrix1 a 2D Array of Reference Type <E> extends Number
@@ -309,38 +310,64 @@ public class MathTools {
     }
 
 
-
-    public static ArrayList<ArrayList<Double>> addMatrices(Double[][] matrix1, Double[][]matrix2, String symbol)throws Exception{
+    /**
+     * Adds or substracts two 2D Arrays(Matrices) if type Double[][].
+     * @param matrix1 2D Array of Type Double
+     * @param matrix2 2D Array of Type Double
+     * @param symbol either '+' or '-' for addition or subtraction
+     * @return returns an 2D Double Array representing the result matrix
+     * @throws Exception
+     */
+    public static Double[][] addMatrices(Double[][] matrix1, Double[][]matrix2, String symbol)throws Exception{
         //compare sizes, matrices must have the same size for addition to be possible
         if(matrixSizeEquality(matrix1, matrix2)){
-            ArrayList<ArrayList<Double>> resultMatrix = new ArrayList<ArrayList<Double>>();
-            ArrayList<Double> currentRow = new ArrayList<Double>();
+            Double[][] resultMatrix = new Double[matrix1.length][matrix1[0].length];
 
             for(int r = 0; r < matrix1.length; r++){
                 for(int c = 0; c < matrix1[r].length; c++){
-                    if(symbol.equals("+")) currentRow.add(Double.sum(matrix1[r][c], matrix2[r][c]));
-                    else if (symbol.equals("-")) currentRow.add(Double.sum(matrix1[r][c], -matrix2[r][c]));
+                    if(symbol.equals("+")) resultMatrix[r][c] = Double.sum(matrix1[r][c], matrix2[r][c]);
+                    else if (symbol.equals("-")) resultMatrix[r][c] = Double.sum(matrix1[r][c], -matrix2[r][c]);
+                    else throw new Exception("3rd parameter must be either '+' or '-'.");
                 }
-                //System.out.println(currentRow.toString());
-                resultMatrix.add(new ArrayList<Double>(currentRow));
-;               currentRow.clear();
             }
-            //System.out.println(resultMatrix.get(1).toString());
             return resultMatrix;
 
         }else throw new Exception("Matrices are not of the same size/type!!!");
     
     }
 
+
+    /**
+     * Performs scalar multiplication on a given matrix.
+     * @param l a real number of primitive type double
+     * @param matrix a 2D Array of type Double[][]
+     * @return a 2D Array of type Double.
+     * @throws Exception 
+     */
+    public static Double[][] scalarMultiplication(double l, Double[][] matrix)throws Exception{
+        
+        if(matrixHomogenity(matrix)){
+            Double[][] resultMatrix = new Double[matrix.length][matrix[0].length];
+
+            for(int r = 0; r < matrix.length; r++){
+                for(int c = 0; c < matrix[0].length; c++){
+                    resultMatrix[r][c] = matrix[r][c] * l;
+                }
+            }
+            return resultMatrix;
+        }else throw new Exception("Matrix is not homogeneous!");
+
+    }
+
     public static void main(String[] args){
 
         Double[][]matrix1 = {
-            new Double[]{1.0, 1.0},
+            new Double[]{1.0, 0.99},
             new Double[]{1.0, 2.0}
         };
 
         Double[][]matrix2 = {
-            new Double[]{1.0, 1.0},
+            new Double[]{1.0, 0.99},
             new Double[]{1.0, 3.0}
         };
 
@@ -354,10 +381,19 @@ public class MathTools {
         
         //System.out.println(matrixSizeEquality(matrix1, matrix2));
         try{
-            System.out.println(addMatrices(matrix1, matrix2, "-").toString());
+            //Double[][] test = addMatrices(matrix1, matrix2, "+");
+            Double[][] test = scalarMultiplication(5.3, matrix1);
+            for(int r = 0; r < test.length; r++){
+                for(int c = 0; c < test[r].length; c++){
+                    System.out.print(test[r][c] + "|");
+                }
+                System.out.println("\n----------------");
+            }
         }catch (Exception e){
             e.printStackTrace();
-        }        
+        }      
+        
+       
 
     }
 }
