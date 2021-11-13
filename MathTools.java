@@ -1,9 +1,13 @@
 package MathTools;
 
 import java.util.InputMismatchException;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Scanner;
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.lang.Numbers;
 
 public class MathTools {
 
@@ -252,4 +256,110 @@ public class MathTools {
         }
         System.out.println(primeFactors.toString());
     }
+
+
+
+
+
+
+
+    /**
+     * Returns true if a matrix is homogeneous, meaning has the same number of columns in each of its rows.
+     * @param matrix a 2D Array of Reference Type 
+     *  extends Number
+     * @return boolean 
+     */
+    public static < E extends Number > boolean matrixHomogenity(E[][]matrix){
+
+        ArrayList<Integer> numberOfElementsPerColumn = new ArrayList<Integer>();
+
+        for(int r = 0; r < matrix.length; r++){
+            numberOfElementsPerColumn.add(matrix[r].length);
+            if (numberOfElementsPerColumn.size() > 1){
+                int e1 = numberOfElementsPerColumn.get(0);
+                for(int i = 1; i < numberOfElementsPerColumn.size(); i++ ){
+                    if(numberOfElementsPerColumn.get(i) != e1){
+                        return false;
+                    } 
+                }
+            } 
+        }
+        return true;
+    }
+    
+    /**
+     * Return true if the two matrices are of same size/type and thus matrix addition can be performed.
+     * @param matrix1 a 2D Array of Reference Type <E> extends Number
+     * @param matrix2 a 2D Array of Reference Type <E> extends Number
+     * @return boolean
+     */
+    public static < E extends Number > boolean matrixSizeEquality(E[][]matrix1, E[][]matrix2){
+        
+        if(matrixHomogenity(matrix1) && matrixHomogenity(matrix2)){
+            if(matrix1.length == matrix2.length){
+                //Since we made sure by checking for homogeneity above that each of the matrices has
+                //the same number of columns in each of its rows and also that the 2 matrices have the
+                //same number of rows it is enough if we just compare the number of columns in the first
+                //rows of each matrix.
+                if(matrix1[0].length == matrix2[0].length)return true;
+                else return false;
+            }else return false;
+            
+        }else return false;
+    }
+
+
+
+    public static ArrayList<ArrayList<Double>> addMatrices(Double[][] matrix1, Double[][]matrix2, String symbol)throws Exception{
+        //compare sizes, matrices must have the same size for addition to be possible
+        if(matrixSizeEquality(matrix1, matrix2)){
+            ArrayList<ArrayList<Double>> resultMatrix = new ArrayList<ArrayList<Double>>();
+            ArrayList<Double> currentRow = new ArrayList<Double>();
+
+            for(int r = 0; r < matrix1.length; r++){
+                for(int c = 0; c < matrix1[r].length; c++){
+                    if(symbol.equals("+")) currentRow.add(Double.sum(matrix1[r][c], matrix2[r][c]));
+                    else if (symbol.equals("-")) currentRow.add(Double.sum(matrix1[r][c], -matrix2[r][c]));
+                }
+                //System.out.println(currentRow.toString());
+                resultMatrix.add(new ArrayList<Double>(currentRow));
+;               currentRow.clear();
+            }
+            //System.out.println(resultMatrix.get(1).toString());
+            return resultMatrix;
+
+        }else throw new Exception("Matrices are not of the same size/type!!!");
+    
+    }
+
+    public static void main(String[] args){
+
+        Double[][]matrix1 = {
+            new Double[]{1.0, 1.0},
+            new Double[]{1.0, 2.0}
+        };
+
+        Double[][]matrix2 = {
+            new Double[]{1.0, 1.0},
+            new Double[]{1.0, 3.0}
+        };
+
+        String[][]strMatrix = {
+            new String[]{"1", "2"},
+            new String[]{"1", "2"}
+        };
+
+        //addMatrices(matrix1, matrix2);
+        //System.out.println(matrixHomogenity(strMatrix));
+        
+        //System.out.println(matrixSizeEquality(matrix1, matrix2));
+        try{
+            System.out.println(addMatrices(matrix1, matrix2, "-").toString());
+        }catch (Exception e){
+            e.printStackTrace();
+        }        
+
+    }
 }
+
+    
